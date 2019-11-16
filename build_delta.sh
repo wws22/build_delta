@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function usage {
-    echo "Usage: ${0##*/} <ver1dir> <ver2dir> <target>"
+    echo "Usage: ${0##*/} <ver1dir> <ver2dir> <target_name>"
     exit 65;
 }
 UNEXPECTED_ERROR=66
@@ -15,10 +15,13 @@ function cleanup {
 }
 
 function create_patch_script {
-    cat - <<EOFiLe > "$TARGET.sh"
-#!/usr/bin/env bash
+    echo "#!/usr/bin/env bash
+#
+PATCH_DIR='$XDIFF'" > "$TARGET.sh"
+    cat - <<EOFiLe >> "$TARGET.sh"
+#
+echo This is just a line of patch script.
 
-echo This is line one.
 EOFiLe
     if [[ $? != 0 ]]; then
         rm -f "$TARGET.sh"
@@ -42,6 +45,11 @@ esac
 
 # check dirs
 if [[ ! -d $VER1 || ! -d $VER2 ]]; then
+    usage
+fi
+
+if [[ $(echo $TARGET |grep -ve '\/' |grep -ve '^~' |wc -l) != 1 ]]; then
+    echo "ERROR: <target_name> it is not a PATH! Please do not use '/'"
     usage
 fi
 
@@ -78,6 +86,5 @@ create_patch_script
 tar -czf "$TARGET.tar.gz" $XDIFF "$TARGET.sh"
 rm -f "$TARGET.sh"
 
-echo "'$XDIFF' '$TARGET'"
 cleanup
 
