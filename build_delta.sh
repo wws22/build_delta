@@ -8,7 +8,7 @@ UNEXPECTED_ERROR=66;
 
 function cleanup {
     if [[ _$XDIFF != "_" && -d $XDIFF ]]; then
-        echo Remove directory $XDIFF
+        echo Removing temporary directory $XDIFF
         rm -rf $XDIFF
     fi
 }
@@ -41,6 +41,7 @@ fi
 NUM="$RANDOM$RANDOM$RANDOM"01234578; NUM=${NUM:1:8};
 XDIFF="xdiff_$NUM"                                     # Directory name
 
+#echo Creating temporary directory $XDIFF
 mkdir -p $XDIFF
 if [[ _$XDIFF != "_" && ! -d $XDIFF ]]; then
     echo "Can't create temporary directory $XDIFF for xdelta files"
@@ -48,7 +49,16 @@ if [[ _$XDIFF != "_" && ! -d $XDIFF ]]; then
     exit $UNEXPECTED_ERROR;
 fi
 
-echo Here $VER1 $VER2 $TARGET $XDIFF
+# Build xdelta
+xdeltadir delta $VER1 $VER2 $XDIFF
+if [[ $(ls -ac1 $XDIFF |wc -l) -lt 3 ]]; then
+    echo "Something wrong! Your delta has zero files"
+    cleanup
+    exit $UNEXPECTED_ERROR;
+fi
+
+# Create archive
+tar -czf "$TARGET.tar.gz" $XDIFF
 
 cleanup
 
