@@ -19,7 +19,7 @@ function create_patch_script {
     echo "#!/usr/bin/env bash
 #
 PATCH_DIR='$XDIFF'" > "$TARGET.sh"
-    cat - <<EOFiLe >> "$TARGET.sh"
+    cat - <<'EOFiLe' >> "$TARGET.sh"
 function usage {
     echo "Usage: ${0##*/} <old_version_dir>"
     exit 65;
