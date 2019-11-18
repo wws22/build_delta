@@ -2,7 +2,11 @@
 README for build_delta
 ==================
 
-This is a small script for preparing xdelta upgrade of your distribution package.
+This is a small script for preparing xdelta upgrade of your
+distribution package. That script produces tar.gz archive
+with a patcher script to doing an incremental upgrade from
+a client's version of DIR to the next version of the DIR with
+the binary and text files.
 
 Installing
 ==========
@@ -14,7 +18,8 @@ Install the newest version from github::
 Using
 ========
 
-You should have two directories with your distribution packages and installed xdelta package <http://xdelta.org/>
+You should have two directories with your distribution packages
+and installed xdelta package <http://xdelta.org/>
 
 .. code-block:: bash
 
