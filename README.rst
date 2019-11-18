@@ -19,11 +19,13 @@ Using
 ========
 
 You should have two directories with your distribution packages
-and installed xdelta package <http://xdelta.org/>
+and xdelta package installed on your system <http://xdelta.org/>
 
 .. code-block:: bash
 
-    Usage: build_delta.sh <ver1dir> <ver2dir> <target_name>
+    $sudo apt-get install xdelta
+    #... Using ...
+    $build_delta.sh <ver1dir> <ver2dir> <target_name>
 
 
 Authors and contact info
