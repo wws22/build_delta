@@ -35,6 +35,7 @@ function cleanup {
     fi
     rm -f xdeltadir.log
 }
+trap cleanup INT TERM EXIT
 
 function create_patch_script {
 ########################################################################## Patcher
@@ -118,7 +119,6 @@ EOFiLe
     if [[ $? != 0 ]]; then
         rm -f "$TARGET.sh"
         echo "Can't create '$TARGET.sh' script!"
-        cleanup
         exit $UNEXPECTED_ERROR;
     fi
     chmod +x "$TARGET.sh"
@@ -161,7 +161,6 @@ XDIFF="xdiff_$NUM"                                     # Directory name
 mkdir -p $XDIFF
 if [[ _$XDIFF != "_" && ! -d $XDIFF ]]; then
     echo "Can't create temporary directory '$XDIFF' for xdelta files"
-    cleanup
     exit $UNEXPECTED_ERROR;
 fi
 
@@ -169,7 +168,6 @@ fi
 xdeltadir delta $VER1 $VER2 $XDIFF
 if [[ $(ls -ac1 $XDIFF |wc -l) -lt 3 ]]; then
     echo "Something wrong! Your delta has zero files"
-    cleanup
     exit $UNEXPECTED_ERROR;
 fi
 
@@ -177,6 +175,3 @@ fi
 create_patch_script
 tar -czf "$TARGET.tar.gz" $XDIFF "$TARGET.sh"
 rm -f "$TARGET.sh"
-
-cleanup
-
