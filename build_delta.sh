@@ -22,16 +22,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+WRONG_USAGE=65
 function usage {
     echo "Usage: ${0##*/} <ver1dir> <ver2dir> <target_name>"
-    exit 65;
+    exit $WRONG_USAGE;
 }
 UNEXPECTED_ERROR=66
 
 function cleanup {
     if [[ _$XDIFF != "_" && -d $XDIFF ]]; then
         echo "Removing temporary directory '$XDIFF'"
-        rm -rf $XDIFF
+        rm -rf "$XDIFF"
     fi
     rm -f xdeltadir.log
 }
@@ -43,16 +44,17 @@ function create_patch_script {
 #
 PATCH_DIR='$XDIFF'" > "$TARGET.sh"
     cat - <<'EOFiLe' >> "$TARGET.sh"
+WRONG_USAGE=65
 function usage {
     echo "Usage: ${0##*/} <old_version_dir>"
-    exit 65;
+    exit $WRONG_USAGE;
 }
 UNEXPECTED_ERROR=66
 
 function aborting {
     if [[ _$XDIFF != "_" && -d $XDIFF ]]; then
         echo "Removing temporary directory '$XDIFF'"
-        rm -rf $XDIFF
+        rm -rf "$XDIFF"
     fi
     rm -f xdeltadir.log
     echo "Patching aborted!"
@@ -62,7 +64,7 @@ function aborting {
 # Print usage info
 case "$1" in
 "") usage; exit $WRONG_USAGE;;
--*) VER1=./$1; echo $VER1;;
+-*) VER1=./$1; echo "$VER1";;
 * ) VER1=$1; ;;
 esac
 
@@ -72,8 +74,8 @@ if [[ ! -d $VER1 || ! -d $PATCH_DIR ]]; then
 fi
 
 # check xdeltadir presence
-which xdeltadir >/dev/null 2>&1
-if [[ $? != 0 ]]; then
+if ! which xdeltadir >/dev/null 2>&1
+then
     echo 'Please install xdelta package at first! Example:'
     echo '$sudo apt-get install xdelta'
     exit $UNEXPECTED_ERROR;
@@ -91,8 +93,8 @@ if [[ _$XDIFF != "_" && ! -d $XDIFF ]]; then
 fi
 
 # Build V2
-xdeltadir patch $PATCH_DIR $VER1 $XDIFF
-if [[ $? -gt 0 || $(ls -ac1 $XDIFF |wc -l) -lt 3 ]]; then
+xdeltadir patch "$PATCH_DIR" "$VER1" "$XDIFF"
+if [[ $? -gt 0 || $(find "$XDIFF" -name "**" |wc -l) -lt 2 ]]; then
     echo "Something wrong! New version directory is almost empty"
     aborting
 fi
@@ -101,16 +103,16 @@ fi
 #cp -f $VER1/prefereces.ini $XDIFF/
 
 # Copy rights for VER1 directory to VER2 directory
-chmod $(stat -c '%a %n' $VER1 |cut -d' ' -f1) $XDIFF
+chmod $(stat -c '%a' "$VER1") "$XDIFF"
 
 # Remove VER1 directory
-rm -rf $VER1
+rm -rf "$VER1"
 
 # Remove unused log
 rm -f xdeltadir.log
 
 # Rename VER2 directory back (as VER1)
-mv -f $XDIFF $VER1
+mv -f "$XDIFF" "$VER1"
 
 echo "Patching completed."
 EOFiLe
@@ -127,9 +129,9 @@ EOFiLe
 # Print usage info
 case "$3" in
 "") usage; exit $WRONG_USAGE;;
--*) VER1=./$1; echo $VER1;;
--*) VER2=./$2; echo $VER2;;
--*) TARGET=./$3; echo $TARGET;;
+-*) VER1=./$1; echo "$VER1";;
+-*) VER2=./$2; echo "$VER2";;
+-*) TARGET=./$3; echo "$TARGET";;
 
 * ) VER1=$1; VER2=$2; TARGET=$3;;
 
@@ -140,14 +142,15 @@ if [[ ! -d $VER1 || ! -d $VER2 ]]; then
     usage
 fi
 
-if [[ $(echo $TARGET |grep -ve '\/' |grep -ve '^~' |wc -l) != 1 ]]; then
+if [[ $(echo "$TARGET" |grep -ve '\/' |grep -cve '^~') != 1 ]]; then
     echo "ERROR: <target_name> it is not a PATH! Please do not use '/'"
     usage
 fi
 
 # check xdeltadir presence
-which xdeltadir >/dev/null 2>&1
-if [[ $? != 0 ]]; then
+
+if ! which xdeltadir >/dev/null 2>&1
+then
     echo 'Please install xdelta package at first! Example:'
     echo '$sudo apt-get install xdelta'
     exit $UNEXPECTED_ERROR;
@@ -165,8 +168,8 @@ if [[ _$XDIFF != "_" && ! -d $XDIFF ]]; then
 fi
 
 # Build xdelta
-xdeltadir delta $VER1 $VER2 $XDIFF
-if [[ $(ls -ac1 $XDIFF |wc -l) -lt 3 ]]; then
+xdeltadir delta "$VER1" "$VER2" "$XDIFF"
+if [[ $(find "$XDIFF" -name "**" |wc -l) -lt 2 ]]; then
     echo "Something wrong! Your delta has zero files"
     exit $UNEXPECTED_ERROR;
 fi
